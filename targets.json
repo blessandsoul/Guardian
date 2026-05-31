@@ -1,13 +1,6 @@
 [
   {
-    "name": "Example API",
-    "url": "https://example.com/health"
-  },
-  {
-    "name": "Example Site",
-    "url": "https://example.com",
-    "method": "GET",
-    "timeoutMs": 8000,
-    "expectStatus": 200
+    "name": "IAI API",
+    "url": "https://api.iai.ge/api/v1/health"
   }
 ]
