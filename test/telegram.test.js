@@ -7,7 +7,7 @@ test('formatSummaryMessage shows all-operational header when everything is UP', 
     { name: 'A', url: 'u', ok: true, statusCode: 200, responseMs: 100, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
     { name: 'B', url: 'u', ok: true, statusCode: 200, responseMs: 50, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
   ]);
-  assert.match(msg, /All systems operational \(2\)/);
+  assert.match(msg, /All systems operational<\/b> \(2\)/);
   assert.match(msg, /✅ A — 200 · 100ms/);
   assert.match(msg, /✅ B — 200 · 50ms/);
 });
