@@ -51,6 +51,21 @@ test('sendTelegram posts to the correct URL with chat_id and text', async () => 
   assert.equal(body.parse_mode, 'HTML');
 });
 
+test('sendTelegram includes message_thread_id when a topic is set', async () => {
+  let captured;
+  const fakeFetch = async (url, init) => { captured = JSON.parse(init.body); return { ok: true }; };
+  await sendTelegram('hi', { fetchImpl: fakeFetch, token: 'T', chatId: '-1001', topicId: '42' });
+  assert.equal(captured.message_thread_id, 42);
+  assert.equal(captured.chat_id, '-1001');
+});
+
+test('sendTelegram omits message_thread_id when no topic is set', async () => {
+  let captured;
+  const fakeFetch = async (url, init) => { captured = JSON.parse(init.body); return { ok: true }; };
+  await sendTelegram('hi', { fetchImpl: fakeFetch, token: 'T', chatId: '999', topicId: '' });
+  assert.equal('message_thread_id' in captured, false);
+});
+
 test('sendTelegram swallows fetch errors and returns ok:false', async () => {
   const fakeFetch = async () => { throw new Error('network down'); };
   const res = await sendTelegram('x', { fetchImpl: fakeFetch, token: 'T', chatId: '1' });

@@ -60,7 +60,8 @@ local `.env` if you run locally — see `.env.example`):
 | Variable | What |
 |----------|------|
 | `TELEGRAM_BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) |
-| `TELEGRAM_CHAT_ID` | The chat that receives alerts |
+| `TELEGRAM_CHAT_ID` | The chat that receives alerts (negative id for a group, e.g. `-100…`) |
+| `TELEGRAM_TOPIC_ID` | *(optional)* Forum topic id (`message_thread_id`) to post into a specific group topic |
 | `CRON_SECRET` | A long random string that protects `/api/cron` |
 | `DISPLAY_TZ` | *(optional)* IANA timezone for alert timestamps, e.g. `Asia/Tbilisi`. Defaults to `UTC`. |
 | `ALWAYS_NOTIFY` | *(optional)* Set to `on` for a heartbeat summary every run (even when all UP). Unset/`off` = alert only on DOWN. |
