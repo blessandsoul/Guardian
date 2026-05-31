@@ -10,7 +10,8 @@
   "scripts": {
     "test": "node --test",
     "dev": "vercel dev",
-    "check": "node scripts/run-once.js"
+    "dev:local": "node --env-file-if-exists=.env scripts/dev-server.mjs",
+    "check": "node --env-file-if-exists=.env scripts/run-once.js"
   },
   "license": "MIT"
 }

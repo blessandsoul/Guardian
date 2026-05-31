@@ -89,14 +89,20 @@ local `.env` if you run locally — see `.env.example`):
 
 ## Run locally
 
+Env vars are loaded automatically from `.env` (via Node's `--env-file`); `.env` is
+gitignored. A `CRON_SECRET` is generated for you — just add your Telegram values.
+
 ```bash
-# one-off check, prints a table
-node scripts/run-once.js
+# 1. Status table in the terminal (no Telegram needed)
+npm run check
 
-# also send Telegram alerts for down targets (needs the env vars set)
-node scripts/run-once.js --notify
+# 2. Local dashboard + API at http://localhost:3000 (no Vercel CLI required)
+npm run dev:local
 
-# full Vercel emulation (dashboard + functions)
+# 3. Send real Telegram alerts for any down target (after filling .env)
+node --env-file=.env scripts/run-once.js --notify
+
+# Full Vercel emulation (optional, needs `vercel login`)
 npx vercel dev
 ```
 
