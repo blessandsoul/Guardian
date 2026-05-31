@@ -1,6 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sendTelegram, formatDownMessage } from '../lib/telegram.js';
+import { sendTelegram, formatDownMessage, formatTimestamp } from '../lib/telegram.js';
+
+test('formatTimestamp renders DD/MM/YY HH:mm:ss for a given timezone', async () => {
+  // 2026-06-01T10:00:00Z is 14:00 in Asia/Tbilisi (UTC+4)
+  assert.equal(formatTimestamp('2026-06-01T10:00:00.000Z', 'Asia/Tbilisi'), '01/06/26 14:00:00');
+  assert.equal(formatTimestamp('2026-06-01T10:00:00.000Z', 'UTC'), '01/06/26 10:00:00');
+});
+
+test('formatTimestamp returns the raw value for an unparseable date', async () => {
+  assert.equal(formatTimestamp('not-a-date'), 'not-a-date');
+});
 
 test('sendTelegram posts to the correct URL with chat_id and text', async () => {
   let captured;
@@ -52,6 +62,16 @@ test('formatDownMessage includes name, url, reason and escapes HTML', async () =
   assert.match(msg, /My &lt;App&gt;/); // escaped
   assert.match(msg, /https:\/\/x\.test\/health/);
   assert.match(msg, /HTTP 502/);
+});
+
+test('formatDownMessage renders the timestamp as DD/MM/YY HH:mm:ss', async () => {
+  process.env.DISPLAY_TZ = 'UTC';
+  const msg = formatDownMessage({
+    name: 'A', url: 'u', ok: false, statusCode: 500, responseMs: 1, error: 'HTTP 500',
+    checkedAt: '2026-06-01T10:00:00.000Z',
+  });
+  assert.match(msg, /Checked: 01\/06\/26 10:00:00/);
+  delete process.env.DISPLAY_TZ;
 });
 
 test('formatDownMessage falls back to status code when no error string', async () => {
