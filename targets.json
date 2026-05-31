@@ -2,5 +2,13 @@
   {
     "name": "IAI API",
     "url": "https://api.iai.ge/api/v1/health"
+  },
+  {
+    "name": "Tulip API",
+    "url": "https://api.tulip.ge/api/v1/health"
+  },
+  {
+    "name": "TechBrain API",
+    "url": "https://api.techbrain.ge/api/v1/health"
   }
 ]
