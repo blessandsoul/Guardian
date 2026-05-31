@@ -62,6 +62,8 @@ local `.env` if you run locally — see `.env.example`):
 | `TELEGRAM_BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) |
 | `TELEGRAM_CHAT_ID` | The chat that receives alerts |
 | `CRON_SECRET` | A long random string that protects `/api/cron` |
+| `DISPLAY_TZ` | *(optional)* IANA timezone for alert timestamps, e.g. `Asia/Tbilisi`. Defaults to `UTC`. |
+| `ALWAYS_NOTIFY` | *(optional)* Set to `on` for a heartbeat summary every run (even when all UP). Unset/`off` = alert only on DOWN. |
 
 > Don't have the Telegram values? Create a bot with **@BotFather** to get the
 > token, send your bot a message, then open

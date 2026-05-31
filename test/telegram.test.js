@@ -1,6 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sendTelegram, formatDownMessage, formatTimestamp } from '../lib/telegram.js';
+import { sendTelegram, formatDownMessage, formatTimestamp, formatSummaryMessage } from '../lib/telegram.js';
+
+test('formatSummaryMessage shows all-operational header when everything is UP', async () => {
+  const msg = formatSummaryMessage([
+    { name: 'A', url: 'u', ok: true, statusCode: 200, responseMs: 100, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
+    { name: 'B', url: 'u', ok: true, statusCode: 200, responseMs: 50, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
+  ]);
+  assert.match(msg, /All systems operational \(2\)/);
+  assert.match(msg, /✅ A — 200 · 100ms/);
+  assert.match(msg, /✅ B — 200 · 50ms/);
+});
+
+test('formatSummaryMessage shows down count and reason when something is DOWN', async () => {
+  const msg = formatSummaryMessage([
+    { name: 'A', url: 'u', ok: true, statusCode: 200, responseMs: 100, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
+    { name: 'B', url: 'u', ok: false, statusCode: 500, responseMs: 80, error: 'HTTP 500', checkedAt: '2026-06-01T10:00:00.000Z' },
+  ]);
+  assert.match(msg, /1 of 2 DOWN/);
+  assert.match(msg, /🔴 B — HTTP 500/);
+});
 
 test('formatTimestamp renders DD/MM/YY HH:mm:ss for a given timezone', async () => {
   // 2026-06-01T10:00:00Z is 14:00 in Asia/Tbilisi (UTC+4)
