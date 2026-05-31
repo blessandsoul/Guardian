@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guardian · Status</title>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --panel: #131a2a;
+      --panel-2: #18202f;
+      --border: #243049;
+      --text: #e6ecf5;
+      --muted: #8a97ad;
+      --up: #2ecc71;
+      --up-bg: rgba(46, 204, 113, 0.12);
+      --down: #ff5c5c;
+      --down-bg: rgba(255, 92, 92, 0.12);
+      --accent: #5b8cff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 50% -10%, #16203a 0%, var(--bg) 55%);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 40px 20px 64px; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
+    }
+    h1 { font-size: 24px; margin: 0; letter-spacing: -0.02em; }
+    h1 .dot { color: var(--accent); }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .summary {
+      display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--muted);
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--panel);
+    }
+    .pill b { color: var(--text); }
+    .grid {
+      display: grid; gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;
+      transition: border-color .2s, transform .2s;
+    }
+    .card:hover { border-color: #32426a; transform: translateY(-1px); }
+    .card.down { background: linear-gradient(180deg, var(--down-bg), var(--panel) 60%); }
+    .card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .name { font-weight: 650; font-size: 15px; }
+    .badge {
+      font-size: 12px; font-weight: 700; letter-spacing: .04em;
+      padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
+    }
+    .badge.up { color: var(--up); background: var(--up-bg); }
+    .badge.down { color: var(--down); background: var(--down-bg); }
+    .url { color: var(--muted); font-size: 12.5px; word-break: break-all; text-decoration: none; }
+    .url:hover { color: var(--accent); }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+    .meta b { color: var(--text); font-weight: 600; }
+    .err { color: var(--down); font-size: 12.5px; word-break: break-word; }
+    .state { text-align: center; color: var(--muted); padding: 60px 0; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12px; text-align: center; }
+    .spin { animation: sp 1s linear infinite; display: inline-block; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Guardian<span class="dot">.</span></h1>
+        <div class="sub">Health monitor</div>
+      </div>
+      <div class="summary" id="summary"></div>
+    </header>
+
+    <div id="content">
+      <div class="state">Loading status…</div>
+    </div>
+
+    <footer id="footer">Auto-refreshes every 30s.</footer>
+  </div>
+
+  <script>
+    const REFRESH_MS = 30000;
+
+    function timeAgo(iso) {
+      if (!iso) return '—';
+      const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+      if (s < 60) return s + 's ago';
+      const m = Math.round(s / 60);
+      if (m < 60) return m + 'm ago';
+      return Math.round(m / 60) + 'h ago';
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"]/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
+      ));
+    }
+
+    function card(r) {
+      const cls = r.ok ? 'up' : 'down';
+      const badge = r.ok ? 'UP' : 'DOWN';
+      const code = r.statusCode != null ? r.statusCode : '—';
+      const line = r.ok
+        ? ''
+        : `<div class="err">⚠ ${escapeHtml(r.error || ('HTTP ' + code))}</div>`;
+      return `
+        <div class="card ${cls === 'down' ? 'down' : ''}">
+          <div class="card-top">
+            <span class="name">${escapeHtml(r.name)}</span>
+            <span class="badge ${cls}">${badge}</span>
+          </div>
+          <a class="url" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.url)}</a>
+          <div class="meta">
+            <span>HTTP <b>${code}</b></span>
+            <span><b>${r.responseMs}</b> ms</span>
+            <span>checked <b>${timeAgo(r.checkedAt)}</b></span>
+          </div>
+          ${line}
+        </div>`;
+    }
+
+    async function load() {
+      const content = document.getElementById('content');
+      const summary = document.getElementById('summary');
+      try {
+        const res = await fetch('/api/status', { cache: 'no-store' });
+        if (!res.ok) throw new Error('status ' + res.status);
+        const data = await res.json();
+        const results = data.results || [];
+        const up = results.filter((r) => r.ok).length;
+        const down = results.length - up;
+
+        summary.innerHTML = `
+          <span class="pill">✓ <b>${up}</b> up</span>
+          <span class="pill">✕ <b>${down}</b> down</span>`;
+
+        content.innerHTML = results.length
+          ? `<div class="grid">${results.map(card).join('')}</div>`
+          : `<div class="state">No targets configured. Edit <b>targets.json</b>.</div>`;
+
+        document.getElementById('footer').textContent =
+          'Updated ' + new Date().toLocaleTimeString() + ' · auto-refreshes every 30s.';
+      } catch (e) {
+        content.innerHTML = `<div class="state">Couldn’t load status: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    load();
+    setInterval(load, REFRESH_MS);
+  </script>
+</body>
+</html>

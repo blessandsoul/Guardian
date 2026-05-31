@@ -1,0 +1,16 @@
+{
+  "name": "guardian",
+  "version": "1.0.0",
+  "description": "Health-check monitor with a status dashboard and Telegram alerts, hostable free on Vercel.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "dev": "vercel dev",
+    "check": "node scripts/run-once.js"
+  },
+  "license": "MIT"
+}
