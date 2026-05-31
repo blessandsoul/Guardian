@@ -108,6 +108,17 @@
       ));
     }
 
+    // Only allow http(s) links so a stray scheme in targets.json can't become
+    // a javascript: link.
+    function safeUrl(u) {
+      try {
+        const p = new URL(u, location.origin);
+        return (p.protocol === 'http:' || p.protocol === 'https:') ? u : '#';
+      } catch {
+        return '#';
+      }
+    }
+
     function card(r) {
       const cls = r.ok ? 'up' : 'down';
       const badge = r.ok ? 'UP' : 'DOWN';
@@ -121,7 +132,7 @@
             <span class="name">${escapeHtml(r.name)}</span>
             <span class="badge ${cls}">${badge}</span>
           </div>
-          <a class="url" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.url)}</a>
+          <a class="url" href="${escapeHtml(safeUrl(r.url))}" target="_blank" rel="noopener">${escapeHtml(r.url)}</a>
           <div class="meta">
             <span>HTTP <b>${code}</b></span>
             <span><b>${r.responseMs}</b> ms</span>
