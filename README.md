@@ -36,6 +36,7 @@ every 5 minutes. Everything stays on free tiers.
 | `GET /` | HTML dashboard (calls `/api/status`, auto-refreshes ~30s) |
 | `GET /api/status` | Runs checks live, returns JSON. Read-only, never alerts. |
 | `GET /api/cron?key=SECRET` | Runs checks **and** sends Telegram for each DOWN target. Secret-protected. |
+| `GET /api/heartbeat?key=SECRET` | Always sends ONE summary of all targets (UP or DOWN). Point an hourly scheduler at this for a periodic "all clear". Secret-protected. |
 
 ## Configure your targets
 
@@ -88,7 +89,19 @@ local `.env` if you run locally — see `.env.example`):
    message for any target that's down.
 
 > Prefer not to put the secret in the URL? Configure cron-job.org to send an
-> `Authorization: Bearer <CRON_SECRET>` header instead — `/api/cron` accepts either.
+> `Authorization: Bearer <CRON_SECRET>` header instead — both endpoints accept either.
+
+### Optional: hourly "all clear" heartbeat
+
+`/api/cron` (every 5 min) only messages you when something is DOWN (with
+`ALWAYS_NOTIFY` off). To also get a periodic status report regardless of state,
+create a **second** cron-job.org job:
+
+- **URL:** `https://<app>.vercel.app/api/heartbeat?key=<CRON_SECRET>`
+- **Schedule:** every 1 hour
+
+You'll get a `🕐 Hourly status` summary of every service each hour, on top of the
+5-minute failure alerts.
 
 ## Run locally
 

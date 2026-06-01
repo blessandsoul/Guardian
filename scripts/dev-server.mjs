@@ -12,6 +12,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import statusHandler from '../api/status.js';
 import cronHandler from '../api/cron.js';
+import heartbeatHandler from '../api/heartbeat.js';
 
 const port = Number(process.env.PORT) || 3000;
 const indexUrl = new URL('../public/index.html', import.meta.url);
@@ -21,6 +22,7 @@ const server = http.createServer(async (req, res) => {
   try {
     if (pathname === '/api/status') return void statusHandler(req, res);
     if (pathname === '/api/cron') return void cronHandler(req, res);
+    if (pathname === '/api/heartbeat') return void heartbeatHandler(req, res);
     if (pathname === '/' || pathname === '/index.html') {
       const html = await readFile(indexUrl);
       res.setHeader('content-type', 'text/html; charset=utf-8');
@@ -40,4 +42,5 @@ server.listen(port, () => {
   console.log(`  Dashboard : http://localhost:${port}/`);
   console.log(`  Status    : http://localhost:${port}/api/status`);
   console.log(`  Cron      : http://localhost:${port}/api/cron?key=<CRON_SECRET>`);
+  console.log(`  Heartbeat : http://localhost:${port}/api/heartbeat?key=<CRON_SECRET>`);
 });

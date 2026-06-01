@@ -1,26 +1,12 @@
 import { loadTargets } from '../lib/targets.js';
 import { runChecks } from '../lib/checks.js';
 import { sendTelegram, formatDownMessage, formatSummaryMessage } from '../lib/telegram.js';
+import { requireSecret } from '../lib/request.js';
 
 /** True when ALWAYS_NOTIFY is set to a truthy-ish value (1/true/yes/on). */
 function alwaysNotifyEnabled() {
   const v = String(process.env.ALWAYS_NOTIFY ?? '').trim().toLowerCase();
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
-}
-
-/** Extract the provided secret from ?key= or an `Authorization: Bearer` header. */
-function getProvidedKey(req) {
-  let fromQuery = req.query?.key;
-  if (!fromQuery && req.url) {
-    try {
-      fromQuery = new URL(req.url, 'http://localhost').searchParams.get('key');
-    } catch {
-      /* ignore malformed url */
-    }
-  }
-  const auth = req.headers?.authorization;
-  const bearer = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  return fromQuery || bearer || null;
 }
 
 /**
@@ -36,13 +22,7 @@ export default async function handler(req, res) {
   res.setHeader('content-type', 'application/json; charset=utf-8');
   res.setHeader('cache-control', 'no-store');
 
-  const secret = process.env.CRON_SECRET;
-  const provided = getProvidedKey(req);
-  if (!secret || provided !== secret) {
-    res.statusCode = 401;
-    res.end(JSON.stringify({ error: 'unauthorized' }));
-    return;
-  }
+  if (!requireSecret(req, res)) return;
 
   try {
     const results = await runChecks(await loadTargets());

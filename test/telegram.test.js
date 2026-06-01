@@ -12,6 +12,15 @@ test('formatSummaryMessage shows all-operational header when everything is UP', 
   assert.match(msg, /✅ B — 200 · 50ms/);
 });
 
+test('formatSummaryMessage prepends a title line when provided', async () => {
+  const msg = formatSummaryMessage(
+    [{ name: 'A', url: 'u', ok: true, statusCode: 200, responseMs: 10, error: null, checkedAt: '2026-06-01T10:00:00.000Z' }],
+    { title: '🕐 Hourly status' },
+  );
+  assert.match(msg, /^<b>🕐 Hourly status<\/b>\n/);
+  assert.match(msg, /All systems operational/);
+});
+
 test('formatSummaryMessage shows down count and reason when something is DOWN', async () => {
   const msg = formatSummaryMessage([
     { name: 'A', url: 'u', ok: true, statusCode: 200, responseMs: 100, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
