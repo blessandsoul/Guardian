@@ -14,5 +14,9 @@
   {
     "name": "Bubabu API",
     "url": "https://api.bubabu.5.9.170.141.sslip.io/api/v1/health"
+  },
+  {
+    "name": "GLOW API",
+    "url": "https://api.glow.ge/api/v1/health"
   }
 ]
