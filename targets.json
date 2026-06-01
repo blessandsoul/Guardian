@@ -1,7 +1,7 @@
 [
   {
-    "name": "IAI API",
-    "url": "https://api.iai.ge/api/v1/health"
+    "name": "AIStaff API",
+    "url": "https://api.aistaff.ge/api/v1/health"
   },
   {
     "name": "Tulip API",
