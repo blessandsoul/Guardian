@@ -30,6 +30,27 @@ test('formatSummaryMessage shows down count and reason when something is DOWN', 
   assert.match(msg, /🔴 B — HTTP 500/);
 });
 
+test('formatSummaryMessage groups by project with Server/Client lines', async () => {
+  const msg = formatSummaryMessage([
+    { group: 'Tulip', label: 'Server', name: 'Tulip Server', url: 'u', ok: true, statusCode: 200, responseMs: 120, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
+    { group: 'Tulip', label: 'Client', name: 'Tulip Client', url: 'u', ok: false, statusCode: 502, responseMs: 80, error: 'HTTP 502', checkedAt: '2026-06-01T10:00:00.000Z' },
+    { group: 'GLOW', label: 'Server', name: 'GLOW Server', url: 'u', ok: true, statusCode: 200, responseMs: 90, error: null, checkedAt: '2026-06-01T10:00:00.000Z' },
+  ]);
+  assert.match(msg, /1 of 3 DOWN/);
+  assert.match(msg, /<b>Tulip<\/b>/);
+  assert.match(msg, /Server — ✅ 200 · 120ms/);
+  assert.match(msg, /Client — 🔴 HTTP 502/);
+  assert.match(msg, /<b>GLOW<\/b>/);
+});
+
+test('formatDownMessage uses "Group Label" title when grouped', async () => {
+  const msg = formatDownMessage({
+    group: 'AIStaff', label: 'Client', name: 'AIStaff Client', url: 'https://aistaff.ge/',
+    ok: false, statusCode: 500, responseMs: 10, error: 'HTTP 500', checkedAt: '2026-06-01T10:00:00.000Z',
+  });
+  assert.match(msg, /<b>AIStaff Client<\/b> is DOWN/);
+});
+
 test('formatTimestamp renders DD/MM/YY HH:mm:ss for a given timezone', async () => {
   // 2026-06-01T10:00:00Z is 14:00 in Asia/Tbilisi (UTC+4)
   assert.equal(formatTimestamp('2026-06-01T10:00:00.000Z', 'Asia/Tbilisi'), '01/06/26 14:00:00');

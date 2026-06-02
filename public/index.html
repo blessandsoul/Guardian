@@ -129,7 +129,7 @@
       return `
         <div class="card ${cls === 'down' ? 'down' : ''}">
           <div class="card-top">
-            <span class="name">${escapeHtml(r.name)}</span>
+            <span class="name">${escapeHtml(r.group ? r.group + ' · ' + (r.label || '') : r.name)}</span>
             <span class="badge ${cls}">${badge}</span>
           </div>
           <a class="url" href="${escapeHtml(safeUrl(r.url))}" target="_blank" rel="noopener">${escapeHtml(r.url)}</a>

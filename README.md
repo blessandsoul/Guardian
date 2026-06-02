@@ -51,7 +51,13 @@ Edit [`targets.json`](targets.json):
 
 Per target: `name` and `url` are required; `method` (default `GET`),
 `timeoutMs` (default `8000`), and `expectStatus` (default: any 2xx is OK) are
-optional.
+optional. Add `group` (project name) and `label` (e.g. `Server`/`Client`) to
+have the summary message grouped per project:
+
+```json
+{ "group": "Tulip", "label": "Server", "name": "Tulip Server", "url": "https://api.tulip.ge/api/v1/health" },
+{ "group": "Tulip", "label": "Client", "name": "Tulip Client", "url": "https://tulip.ge/" }
+```
 
 ## Environment variables
 

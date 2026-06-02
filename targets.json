@@ -1,22 +1,15 @@
 [
-  {
-    "name": "AIStaff API",
-    "url": "https://api.aistaff.ge/api/v1/health"
-  },
-  {
-    "name": "Tulip API",
-    "url": "https://api.tulip.ge/api/v1/health"
-  },
-  {
-    "name": "TechBrain API",
-    "url": "https://api.techbrain.ge/api/v1/health"
-  },
-  {
-    "name": "Bubabu API",
-    "url": "https://api.bubabu.5.9.170.141.sslip.io/api/v1/health"
-  },
-  {
-    "name": "GLOW API",
-    "url": "https://api.glow.ge/api/v1/health"
-  }
+  { "group": "AIStaff",   "label": "Server", "name": "AIStaff Server",   "url": "https://api.aistaff.ge/api/v1/health" },
+  { "group": "AIStaff",   "label": "Client", "name": "AIStaff Client",   "url": "https://aistaff.ge/" },
+
+  { "group": "Tulip",     "label": "Server", "name": "Tulip Server",     "url": "https://api.tulip.ge/api/v1/health" },
+  { "group": "Tulip",     "label": "Client", "name": "Tulip Client",     "url": "https://tulip.ge/" },
+
+  { "group": "TechBrain", "label": "Server", "name": "TechBrain Server", "url": "https://api.techbrain.ge/api/v1/health" },
+  { "group": "TechBrain", "label": "Client", "name": "TechBrain Client", "url": "https://techbrain.ge/" },
+
+  { "group": "Bubabu",    "label": "Server", "name": "Bubabu Server",    "url": "https://api.bubabu.5.9.170.141.sslip.io/api/v1/health" },
+
+  { "group": "GLOW",      "label": "Server", "name": "GLOW Server",      "url": "https://api.glow.ge/api/v1/health" },
+  { "group": "GLOW",      "label": "Client", "name": "GLOW Client",      "url": "https://glow.ge/" }
 ]
