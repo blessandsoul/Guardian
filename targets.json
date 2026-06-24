@@ -2,9 +2,6 @@
   { "group": "AIStaff",   "label": "Server", "name": "AIStaff Server",   "url": "https://api.aistaff.ge/api/v1/health" },
   { "group": "AIStaff",   "label": "Client", "name": "AIStaff Client",   "url": "https://aistaff.ge/" },
 
-  { "group": "Tulip",     "label": "Server", "name": "Tulip Server",     "url": "https://api.tulip.ge/api/v1/health" },
-  { "group": "Tulip",     "label": "Client", "name": "Tulip Client",     "url": "https://tulip.ge/" },
-
   { "group": "TechBrain", "label": "Server", "name": "TechBrain Server", "url": "https://api.techbrain.ge/api/v1/health" },
   { "group": "TechBrain", "label": "Client", "name": "TechBrain Client", "url": "https://techbrain.ge/" },
 
