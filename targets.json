@@ -5,5 +5,6 @@
   { "group": "TechBrain", "label": "Server", "name": "TechBrain Server", "url": "https://api.techbrain.ge/api/v1/health" },
   { "group": "TechBrain", "label": "Client", "name": "TechBrain Client", "url": "https://techbrain.ge/" },
 
-  { "group": "Bubabu",    "label": "Server", "name": "Bubabu Server",    "url": "https://api.bubabu.5.9.170.141.sslip.io/api/v1/health" }
+  { "group": "iAI",       "label": "Server", "name": "iAI Server",       "url": "https://api.iai.ge/api/v1/health" },
+  { "group": "iAI",       "label": "Client", "name": "iAI Client",       "url": "https://iai.ge/" }
 ]
