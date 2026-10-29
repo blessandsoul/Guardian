@@ -65,7 +65,7 @@ test('sendTelegram posts to the correct URL with chat_id and text', async () => 
   let captured;
   const fakeFetch = async (url, init) => {
     captured = { url, init };
-    return { ok: true };
+    return Response.json({ ok: true });
   };
   const res = await sendTelegram('hello world', {
     fetchImpl: fakeFetch,
@@ -83,7 +83,7 @@ test('sendTelegram posts to the correct URL with chat_id and text', async () => 
 
 test('sendTelegram includes message_thread_id when a topic is set', async () => {
   let captured;
-  const fakeFetch = async (url, init) => { captured = JSON.parse(init.body); return { ok: true }; };
+  const fakeFetch = async (url, init) => { captured = JSON.parse(init.body); return Response.json({ ok: true }); };
   await sendTelegram('hi', { fetchImpl: fakeFetch, token: 'T', chatId: '-1001', topicId: '42' });
   assert.equal(captured.message_thread_id, 42);
   assert.equal(captured.chat_id, '-1001');
@@ -91,7 +91,7 @@ test('sendTelegram includes message_thread_id when a topic is set', async () => 
 
 test('sendTelegram omits message_thread_id when no topic is set', async () => {
   let captured;
-  const fakeFetch = async (url, init) => { captured = JSON.parse(init.body); return { ok: true }; };
+  const fakeFetch = async (url, init) => { captured = JSON.parse(init.body); return Response.json({ ok: true }); };
   await sendTelegram('hi', { fetchImpl: fakeFetch, token: 'T', chatId: '999', topicId: '' });
   assert.equal('message_thread_id' in captured, false);
 });
@@ -144,4 +144,20 @@ test('formatDownMessage falls back to status code when no error string', async (
     checkedAt: '2026-06-01T10:00:00.000Z',
   });
   assert.match(msg, /HTTP 503/);
+});
+
+test('sendTelegram does not acknowledge an API rejection returned with HTTP 200', async () => {
+  const result = await sendTelegram('outage', {
+    token: 'T', chatId: '1',
+    fetchImpl: async () => Response.json({ ok: false, description: 'rejected' }),
+  });
+  assert.equal(result.ok, false, 'an undelivered alert must remain pending in the incident store');
+});
+
+test('formatSummaryMessage labels a first failed run as awaiting confirmation', () => {
+  const message = formatSummaryMessage([
+    { name: 'API', ok: false, state: 'pending', error: 'timeout', checkedAt: '2026-10-29T15:00:00Z' },
+  ]);
+  assert.match(message, /awaiting confirmation/i);
+  assert.doesNotMatch(message, /1 of 1 DOWN|All systems operational/);
 });

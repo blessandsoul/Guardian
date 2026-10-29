@@ -104,3 +104,81 @@ test('runChecks runs all targets and never throws', async () => {
     await srv.close();
   }
 });
+
+test('runChecks confirms a timeout before reporting DOWN', async () => {
+  let requests = 0;
+  const srv = await startServer((req, res) => {
+    requests += 1;
+    if (requests === 1) return;
+    res.end('recovered');
+  });
+  try {
+    const [result] = await runChecks([
+      { name: 'transient', url: srv.base, timeoutMs: 50 },
+    ]);
+    assert.equal(result.ok, true, 'a successful confirmation must suppress the outage');
+    assert.equal(result.statusCode, 200);
+    assert.equal(requests, 2);
+  } finally {
+    await srv.close();
+  }
+});
+
+test('runChecks reports a persistent HTTP failure after three attempts', async () => {
+  let requests = 0;
+  const srv = await startServer((req, res) => {
+    requests += 1;
+    res.statusCode = 503;
+    res.end('unavailable');
+  });
+  try {
+    const [result] = await runChecks([{ name: 'outage', url: srv.base }]);
+    assert.equal(result.ok, false);
+    assert.equal(result.statusCode, 503);
+    assert.equal(requests, 3, 'confirm failure without retrying indefinitely');
+  } finally {
+    await srv.close();
+  }
+});
+
+test('runChecks stops confirming as soon as an HTTP failure recovers', async () => {
+  let requests = 0;
+  const srv = await startServer((req, res) => {
+    requests += 1;
+    res.statusCode = requests === 1 ? 502 : 200;
+    res.end();
+  });
+  try {
+    const [result] = await runChecks([{ name: 'recovering', url: srv.base }]);
+    assert.equal(result.ok, true);
+    assert.equal(requests, 2);
+  } finally {
+    await srv.close();
+  }
+});
+
+test('runChecks never retries a failed POST check', async () => {
+  let requests = 0;
+  const srv = await startServer((req, res) => {
+    requests += 1;
+    res.statusCode = 500;
+    res.end();
+  });
+  try {
+    const [result] = await runChecks([{ name: 'post', url: srv.base, method: 'POST' }]);
+    assert.equal(result.ok, false);
+    assert.equal(requests, 1, 'confirmation must not repeat a possible side effect');
+  } finally {
+    await srv.close();
+  }
+});
+
+test('header-only checks release response bodies before returning', async () => {
+  for (const status of [200, 503]) {
+    let released = false;
+    const response = new Response(new ReadableStream({ cancel() { released = true; } }), { status });
+    const result = await checkTarget({ name: 'stream', url: 'https://example.test' }, async () => response);
+    assert.equal(result.statusCode, status);
+    assert.equal(released, true, 'unread bodies must not retain connections across warm invocations');
+  }
+});

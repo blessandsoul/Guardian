@@ -3,7 +3,8 @@
   "framework": null,
   "functions": {
     "api/*.js": {
-      "includeFiles": "targets.json"
+      "includeFiles": "targets.json",
+      "maxDuration": 60
     }
   }
 }

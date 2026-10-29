@@ -8,7 +8,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test",
+    "test": "node scripts/run-tests.mjs",
     "dev": "vercel dev",
     "dev:local": "node --env-file-if-exists=.env scripts/dev-server.mjs",
     "check": "node --env-file-if-exists=.env scripts/run-once.js"

@@ -1,14 +1,11 @@
-import { loadTargets } from '../lib/targets.js';
-import { runChecks } from '../lib/checks.js';
-import { sendTelegram, formatSummaryMessage } from '../lib/telegram.js';
+import { readSnapshot } from '../lib/monitor.js';
+import { sendTelegram, formatSummaryMessage, formatTimestamp } from '../lib/telegram.js';
 import { requireSecret } from '../lib/request.js';
 
 /**
  * GET /api/heartbeat?key=SECRET
- * Always sends ONE Telegram summary listing every target's status (UP or DOWN),
- * regardless of ALWAYS_NOTIFY. Point a separate, lower-frequency scheduler at
- * this (e.g. cron-job.org every hour) so you get a periodic "all clear" report
- * on top of the failure-only alerts from /api/cron.
+ * Sends the last scheduled snapshot, without running a competing set of probes.
+ * Missing or stale evidence must never produce a fresh "all clear".
  */
 export default async function handler(req, res) {
   res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -17,26 +14,24 @@ export default async function handler(req, res) {
   if (!requireSecret(req, res)) return;
 
   try {
-    const results = await runChecks(await loadTargets());
-    const down = results.filter((r) => !r.ok);
-
+    const snapshot = await readSnapshot();
     let alertsSent = 0;
-    if (results.length > 0) {
-      const r = await sendTelegram(formatSummaryMessage(results, { title: '🕐 Hourly status' }));
+    if (snapshot.results.length > 0) {
+      const text = snapshot.stale
+        ? `⚠️ Guardian monitor data is stale.\nLast completed check: ${formatTimestamp(snapshot.checkedAt)}\nCurrent service status is unknown.`
+        : formatSummaryMessage(snapshot.results, { title: '🕐 Hourly status' });
+      const r = await sendTelegram(text);
       if (r?.ok) alertsSent = 1;
     }
 
-    res.statusCode = 200;
+    res.statusCode = snapshot.results.length && !alertsSent ? 502 : 200;
     res.end(JSON.stringify({
-      checkedAt: new Date().toISOString(),
+      ...snapshot,
       mode: 'heartbeat',
-      checked: results.length,
-      down: down.length,
       alertsSent,
-      results,
     }));
   } catch (err) {
-    res.statusCode = 500;
+    res.statusCode = 503;
     res.end(JSON.stringify({ error: err?.message || 'internal error' }));
   }
 }

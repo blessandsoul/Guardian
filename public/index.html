@@ -16,6 +16,7 @@
       --up-bg: rgba(46, 204, 113, 0.12);
       --down: #ff5c5c;
       --down-bg: rgba(255, 92, 92, 0.12);
+      --pending: #f2c66d;
       --accent: #5b8cff;
     }
     * { box-sizing: border-box; }
@@ -62,6 +63,7 @@
     }
     .badge.up { color: var(--up); background: var(--up-bg); }
     .badge.down { color: var(--down); background: var(--down-bg); }
+    .badge.pending, .badge.unknown { color: var(--pending); background: rgba(242, 198, 109, 0.12); }
     .url { color: var(--muted); font-size: 12.5px; word-break: break-all; text-decoration: none; }
     .url:hover { color: var(--accent); }
     .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
@@ -87,7 +89,7 @@
       <div class="state">Loading status…</div>
     </div>
 
-    <footer id="footer">Auto-refreshes every 30s.</footer>
+    <footer id="footer">Checks every 5 min · refreshes the saved status every 30s.</footer>
   </div>
 
   <script>
@@ -119,13 +121,13 @@
       }
     }
 
-    function card(r) {
-      const cls = r.ok ? 'up' : 'down';
-      const badge = r.ok ? 'UP' : 'DOWN';
+    function card(r, stale) {
+      const cls = stale ? 'unknown' : r.state === 'pending' ? 'pending' : r.ok ? 'up' : 'down';
+      const badge = stale ? 'UNKNOWN' : cls === 'pending' ? 'CONFIRMING' : r.ok ? 'UP' : 'UNREACHABLE';
       const code = r.statusCode != null ? r.statusCode : '—';
       const line = r.ok
         ? ''
-        : `<div class="err">⚠ ${escapeHtml(r.error || ('HTTP ' + code))}</div>`;
+        : `<div class="err">⚠ ${cls === 'pending' ? 'Awaiting confirmation · ' : ''}${escapeHtml(r.error || ('HTTP ' + code))}</div>`;
       return `
         <div class="card ${cls === 'down' ? 'down' : ''}">
           <div class="card-top">
@@ -151,19 +153,24 @@
         const data = await res.json();
         const results = data.results || [];
         const up = results.filter((r) => r.ok).length;
-        const down = results.length - up;
+        const pending = results.filter((r) => r.state === 'pending').length;
+        const down = results.length - up - pending;
 
-        summary.innerHTML = `
+        // Stale evidence describes the monitor, not current service health.
+        summary.innerHTML = data.stale ? '<span class="pill">⚠ <b>Monitor data is stale</b> · current status unknown</span>' : `
           <span class="pill">✓ <b>${up}</b> up</span>
-          <span class="pill">✕ <b>${down}</b> down</span>`;
+          <span class="pill">✕ <b>${down}</b> unreachable</span>
+          ${pending ? `<span class="pill">⚠ <b>${pending}</b> confirming</span>` : ''}`;
 
         content.innerHTML = results.length
-          ? `<div class="grid">${results.map(card).join('')}</div>`
+          ? `<div class="grid">${results.map((r) => card(r, data.stale)).join('')}</div>`
           : `<div class="state">No targets configured. Edit <b>targets.json</b>.</div>`;
 
         document.getElementById('footer').textContent =
-          'Updated ' + new Date().toLocaleTimeString() + ' · auto-refreshes every 30s.';
+          'Last check ' + new Date(data.checkedAt).toLocaleString() +
+          (data.stale ? ' · Monitor stale: check the scheduler.' : ' · checks every 5 min · refreshes every 30s.');
       } catch (e) {
+        summary.innerHTML = '';
         content.innerHTML = `<div class="state">Couldn’t load status: ${escapeHtml(e.message)}</div>`;
       }
     }

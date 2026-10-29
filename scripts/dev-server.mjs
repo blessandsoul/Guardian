@@ -5,8 +5,8 @@
  *
  * Routes:
  *   GET /            -> public/index.html (dashboard)
- *   GET /api/status  -> live checks as JSON
- *   GET /api/cron    -> live checks + Telegram alerts (needs ?key=CRON_SECRET)
+ *   GET /api/status  -> saved scheduled snapshot as JSON (requires Redis)
+ *   GET /api/cron    -> confirmed checks + incident/recovery alerts (needs secret)
  */
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
